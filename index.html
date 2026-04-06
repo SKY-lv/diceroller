@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DiceRoller - 骰子模拟器</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh;display:flex;align-items:center;justify-content:center;}
+.app{text-align:center;padding:20px;}
+.dice-area{display:flex;gap:20px;justify-content:center;margin-bottom:30px;}
+.dice{width:100px;height:100px;background:#1e293b;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:3em;cursor:pointer;transition:all 0.3s;user-select:none;}
+.dice:hover{background:#334155;}
+.dice.rolling{animation:roll 0.3s ease-in-out;}
+@keyframes roll{0%,100%{transform:rotate(0deg);}50%{transform:rotate(180deg);}}
+.result{font-size:1.5em;color:#64748b;margin-bottom:20px;}
+.result span{color:#22c55e;font-weight:600;}
+.history{max-height:200px;overflow-y:auto;margin-top:20px;}
+.history-item{padding:8px;background:#1e293b;border-radius:8px;margin:4px 0;font-size:14px;}
+.controls{display:flex;gap:12px;justify-content:center;margin-bottom:20px;}
+.btn{padding:14px 28px;border:none;border-radius:8px;cursor:pointer;font-size:16px;font-weight:500;}
+.btn-primary{background:#22c55e;color:#000;}
+.btn-secondary{background:#1e293b;color:#e2e8f0;border:1px solid #334155;}
+</style>
+</head>
+<body>
+<div class="app">
+  <h1 style="font-size:2em;margin-bottom:20px">🎲 DiceRoller</h1>
+  
+  <div class="controls">
+    <select id="dice-count" style="padding:12px;background:#1e293b;border:1px solid #334155;border-radius:8px;color:#e2e8f0;font-size:14px;">
+      <option value="1">1个骰子</option>
+      <option value="2" selected>2个骰子</option>
+      <option value="3">3个骰子</option>
+      <option value="4">4个骰子</option>
+      <option value="5">5个骰子</option>
+    </select>
+    <select id="dice-type" style="padding:12px;background:#1e293b;border:1px solid #334155;border-radius:8px;color:#e2e8f0;font-size:14px;">
+      <option value="6">D6</option>
+      <option value="4">D4</option>
+      <option value="8">D8</option>
+      <option value="10">D10</option>
+      <option value="12">D12</option>
+      <option value="20">D20</option>
+    </select>
+  </div>
+  
+  <div class="dice-area" id="dice-area"></div>
+  
+  <div class="result" id="result">点击骰子或按钮投掷</div>
+  
+  <button class="btn btn-primary" onclick="roll()">🎲 投掷</button>
+  <button class="btn btn-secondary" onclick="clearHistory()" style="margin-left:8px">清空</button>
+  
+  <div class="history" id="history"></div>
+</div>
+
+<script>
+let history = [];
+const diceSymbols = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+
+function roll() {
+  const count = parseInt(document.getElementById('dice-count').value);
+  const sides = parseInt(document.getElementById('dice-type').value);
+  
+  const results = [];
+  for (let i = 0; i < count; i++) {
+    results.push(Math.floor(Math.random() * sides) + 1);
+  }
+  
+  const total = results.reduce((a, b) => a + b, 0);
+  
+  // Animate dice
+  const diceArea = document.getElementById('dice-area');
+  diceArea.innerHTML = results.map((r, i) => {
+    const symbol = sides === 6 ? diceSymbols[r - 1] : r;
+    return `<div class="dice rolling" style="animation-delay:${i * 0.1}s">${symbol}</div>`;
+  }).join('');
+  
+  document.getElementById('result').innerHTML = `结果: <span>${results.join(' + ')} = ${total}</span>`;
+  
+  history.unshift({ results, total, time: Date.now() });
+  if (history.length > 10) history.pop();
+  
+  document.getElementById('history').innerHTML = history.map(h => 
+    `<div class="history-item">${h.results.join(' + ')} = ${h.total}</div>`
+  ).join('');
+}
+
+function clearHistory() {
+  history = [];
+  document.getElementById('history').innerHTML = '';
+}
+
+// Init
+document.getElementById('dice-area').innerHTML = '<div class="dice">?</div><div class="dice">?</div>';
+</script>
+</body>
+</html>
